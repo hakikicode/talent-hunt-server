@@ -45,6 +45,7 @@ async function run() {
   try {
     const db = client.db("contestDB");
     const usersCollection = db.collection("user");
+    const contestsCollection = db.collection("contest");
 
     // Auth related api
     app.post("/jwt", async (req, res) => {
@@ -101,6 +102,49 @@ async function run() {
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const result = await usersCollection.findOne({ email });
+      res.send(result);
+    });
+
+    // -----------------Contest related api------------------
+    // Get all contests
+    app.get("/contests", async (req, res) => {
+      const result = await contestsCollection.find({}).toArray();
+      res.send(result);
+    });
+
+    // Get contest by id
+    app.get("/contests/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await contestsCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      res.send(result);
+    });
+
+    // Save a contest in DB
+    app.post("/contests", async (req, res) => {
+      const contest = req.body;
+      const result = await contestsCollection.insertOne(contest);
+      res.send(result);
+    });
+
+    // Update a contest in DB
+    app.patch("/contests/:id", async (req, res) => {
+      const id = req.params.id;
+      const contest = req.body;
+      const result = await contestsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { ...contest } }
+      );
+      res.send(result);
+    });
+
+    // Delete a contest in DB
+    app.delete("/contests/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await contestsCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
       res.send(result);
     });
 
