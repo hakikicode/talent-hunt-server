@@ -1,5 +1,6 @@
 const cors = require("cors");
 const express = require("express");
+const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const { LOCAL_CLIENT, CLIENT } = require("../config/defaults");
 
