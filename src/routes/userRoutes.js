@@ -8,6 +8,6 @@ router.route("/").get(userController.getAllUsers);
 router
   .route("/:email")
   .get(userController.getUserByEmail)
-  .put(userController.createOrUpdateUser);
+  .put(userController.createUser);
 
 module.exports = router;

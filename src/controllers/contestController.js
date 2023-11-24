@@ -1,7 +1,11 @@
 const Contest = require("../models/contestModel");
 
 exports.getAllContests = async (req, res) => {
-  const result = await Contest.find({}).populate("creator", "name email");
+  const result = await Contest.find({})
+    .populate("creator", "name email")
+    .select(
+      "title type description instruction image prizeMoney creator winner deadline participationCount"
+    );
   res.send(result);
 };
 
@@ -11,9 +15,15 @@ exports.getContestById = async (req, res) => {
   res.send(result);
 };
 
+exports.getContestByCreator = async (req, res) => {
+  const id = req.params.creatorId;
+  const result = await Contest.find({ creator: id})
+  res.send(result)
+}
+
 exports.createContest = async (req, res) => {
   const contest = req.body;
-  const result = await contestsCollection.insertOne(contest);
+  const result = await Contest.create(contest);
   res.send(result);
 };
 

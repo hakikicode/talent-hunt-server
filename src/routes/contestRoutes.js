@@ -13,4 +13,6 @@ router
   .patch(contestController.updateContest)
   .delete(contestController.deleteContest);
 
+router.route("/creator/:creatorId").get(contestController.getContestByCreator);
+
 module.exports = router;

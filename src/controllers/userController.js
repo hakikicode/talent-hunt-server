@@ -11,7 +11,7 @@ exports.getUserByEmail = async (req, res) => {
   res.send(result);
 };
 
-exports.createOrUpdateUser = async (req, res) => {
+exports.createUser = async (req, res) => {
   const email = req.params.email;
   const user = req.body;
   const query = { email: email };

@@ -26,6 +26,11 @@ const contestSchema = new Schema({
     type: Number,
     required: [true, "Prize money is required"],
   },
+  status: {
+    type: String,
+    enum: ["pending", "accepted"],
+    default: "pending",
+  },
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -50,6 +55,11 @@ const contestSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
+});
+
+// Virtual fields
+contestSchema.virtual("participationCount").get(function () {
+  return this.participants.length;
 });
 
 const Contest = model("Contest", contestSchema);
