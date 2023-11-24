@@ -108,6 +108,18 @@ async function run() {
     // -----------------Contest related api------------------
     // Get all contests
     app.get("/contests", async (req, res) => {
+      // const result = await contestsCollection
+      //   .aggregate([
+      //     {
+      //       $lookup: {
+      //         from: "user",
+      //         localField: "creatorId",
+      //         foreignField: "_id",
+      //         as: "creator",
+      //       },
+      //     },
+      //   ])
+      //   .toArray();
       const result = await contestsCollection.find({}).toArray();
       res.send(result);
     });
@@ -115,16 +127,36 @@ async function run() {
     // Get contest by id
     app.get("/contests/:id", async (req, res) => {
       const id = req.params.id;
-      const result = await contestsCollection.findOne({
-        _id: new ObjectId(id),
-      });
-      res.send(result);
+      const result = await contestsCollection
+        .aggregate([
+          {
+            $match: { _id: new ObjectId(id) },
+          },
+          {
+            $lookup: {
+              from: "user",
+              localField: "creatorId",
+              foreignField: "_id",
+              as: "creator",
+            },
+          },
+        ])
+        .toArray();
+      res.send(result[0]);
     });
 
     // Save a contest in DB
     app.post("/contests", async (req, res) => {
       const contest = req.body;
-      const result = await contestsCollection.insertOne(contest);
+
+      const updatedData = {
+        ...contest,
+        status: "pending",
+        attemptedCount: 0,
+        creatorId: new ObjectId(contest.creatorId),
+      };
+
+      const result = await contestsCollection.insertOne(updatedData);
       res.send(result);
     });
 
