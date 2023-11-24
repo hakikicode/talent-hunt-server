@@ -3,6 +3,7 @@ const connectDB = require("./db/connectDB");
 const applyMiddleware = require("./middlewares");
 const { notFound, globalErrorHandler } = require("./middlewares/errorHandler");
 
+const authRouter = require("./routes/authRoutes");
 const userRouter = require("./routes/userRoutes");
 const contestRouter = require("./routes/contestRoutes");
 
@@ -18,6 +19,7 @@ app.get("/health", (req, res) => {
 });
 
 // Routes
+app.use("/", authRouter);
 app.use("/users", userRouter);
 app.use("/contests", contestRouter);
 
