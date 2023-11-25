@@ -3,6 +3,8 @@ const contestController = require("../controllers/contestController");
 
 const router = express.Router();
 
+router.route("/admin").get(contestController.getAllContestsForAdmin);
+
 router
   .route("/")
   .get(contestController.getAllContests)

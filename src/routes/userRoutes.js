@@ -5,9 +5,11 @@ const router = express.Router();
 
 router.route("/").get(userController.getAllUsers);
 
+router.route("/:id").patch(userController.updateUser);
+
 router
   .route("/:email")
   .get(userController.getUserByEmail)
-  .put(userController.createUser);
+  .post(userController.createUser);
 
 module.exports = router;

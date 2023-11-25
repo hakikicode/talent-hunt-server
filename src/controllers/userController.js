@@ -21,3 +21,10 @@ exports.createUser = async (req, res) => {
   const result = await User.create(user);
   res.send(result);
 };
+
+exports.updateUser = async (req, res) => {
+  const id = req.params.id;
+  const user = req.body;
+  const result = await User.findByIdAndUpdate(id, user);
+  res.send(result);
+}
