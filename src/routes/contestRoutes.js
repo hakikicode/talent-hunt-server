@@ -1,14 +1,25 @@
 const express = require("express");
 const contestController = require("../controllers/contestController");
+const verifyToken = require("../middlewares/verifyToken");
+const verifyRole = require("../middlewares/verifyRole");
 
 const router = express.Router();
 
-router.route("/admin").get(contestController.getAllContestsForAdmin);
+router
+  .route("/admin")
+  .get(
+    verifyToken,
+    verifyRole("admin"),
+    contestController.getAllContestsForAdmin
+  );
 
 router
   .route("/")
   .get(contestController.getAllContests)
-  .post(contestController.createContest);
+  .post(verifyToken, contestController.createContest);
+
+router.use(verifyToken);
+
 router
   .route("/:id")
   .get(contestController.getContestById)

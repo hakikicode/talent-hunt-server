@@ -1,4 +1,5 @@
 const { model, Schema } = require("mongoose");
+const validator = require("validator");
 
 const contestSchema = new Schema({
   title: {
@@ -13,10 +14,12 @@ const contestSchema = new Schema({
   description: {
     type: String,
     required: [true, "Description is required"],
+    minLength: [50, "Description must be at least 50 characters long"],
   },
   instruction: {
     type: String,
     required: [true, "Instruction is required"],
+    minLength: [20, "Instruction must be at least 20 characters long"],
   },
   image: {
     type: String,
@@ -25,10 +28,12 @@ const contestSchema = new Schema({
   prizeMoney: {
     type: Number,
     required: [true, "Prize money is required"],
+    min: [1, "Prize money must be at least 1"],
   },
-  prize: {
+  entryFee: {
     type: Number,
-    required: [true, "Prize is required"],
+    required: [true, "Entry fee is required"],
+    min: [1, "Entry fee must be at least 1"],
   },
   status: {
     type: String,

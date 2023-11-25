@@ -1,4 +1,5 @@
 const Contest = require("../models/contestModel");
+const User = require("../models/userModel");
 
 exports.getAllContests = async (req, res) => {
   const result = await Contest.aggregate([
@@ -11,7 +12,7 @@ exports.getAllContests = async (req, res) => {
         type: 1,
         image: 1,
         description: 1,
-        participationCount: { $size: "$participants" },
+        participantsCount: { $size: "$participants" },
       },
     },
   ]);
@@ -48,6 +49,14 @@ exports.getAllContestsForAdmin = async (req, res) => {
 
 exports.createContest = async (req, res) => {
   const contest = req.body;
+
+  const creator = await User.findById(contest.creator).select("role");
+  if (!creator || creator.role !== "creator") {
+    return res
+      .status(403)
+      .send({ message: "Access Denied: Insufficient Permission" });
+  }
+
   const result = await Contest.create(contest);
   res.send(result);
 };
