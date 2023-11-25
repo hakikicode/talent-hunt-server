@@ -16,5 +16,8 @@ router
   .delete(contestController.deleteContest);
 
 router.route("/creator/:creatorId").get(contestController.getContestByCreator);
+router
+  .route("/:contestId/participant/:userId")
+  .patch(contestController.addParticipant);
 
 module.exports = router;

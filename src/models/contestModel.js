@@ -26,6 +26,10 @@ const contestSchema = new Schema({
     type: Number,
     required: [true, "Prize money is required"],
   },
+  prize: {
+    type: Number,
+    required: [true, "Prize is required"],
+  },
   status: {
     type: String,
     enum: ["pending", "accepted"],
