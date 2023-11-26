@@ -24,9 +24,9 @@ router
 router.use(verifyToken);
 
 router
-  .route("/registered/:userId")
-  .get(contestController.getRegisteredContestByUser);
-router.route("/winning/:userId").get(contestController.getWinningContestByUser);
+  .route("/registered")
+  .get(verifyRole("user"), contestController.getRegisteredContest);
+router.route("/winning").get(contestController.getWinningContest);
 
 router
   .route("/:id")

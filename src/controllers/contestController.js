@@ -141,20 +141,40 @@ exports.getBestCreatorByPrizeMoney = async (req, res) => {
   res.status(200).json(result);
 };
 
-exports.getRegisteredContestByUser = async (req, res) => {
+exports.getRegisteredContest = async (req, res) => {
   try {
-    const id = req.params.userId;
-    const result = await Contest.find({ participants: id });
+    const email = req.decoded.email;
+    const user = await User.findOne({ email });
+
+    if (!user || user.role !== "user") {
+      return res
+        .status(403)
+        .send({ message: "Access Denied: Insufficient Permission" });
+    }
+
+    const result = await Contest.find({ participants: user._id });
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json(error);
   }
 };
 
-exports.getWinningContestByUser = async (req, res) => {
-  const id = req.params.userId;
-  const result = await Contest.find({ winner: id });
-  res.status(200).json(result);
+exports.getWinningContest = async (req, res) => {
+  try {
+    const email = req.decoded.email;
+    const user = await User.findOne({ email });
+
+    if (!user || user.role !== "user") {
+      return res
+        .status(403)
+        .send({ message: "Access Denied: Insufficient Permission" });
+    }
+
+    const result = await Contest.find({ winner: user._id });
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 
 exports.getContestByCreator = async (req, res) => {
