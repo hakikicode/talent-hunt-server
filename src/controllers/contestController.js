@@ -26,6 +26,67 @@ exports.getContestById = async (req, res) => {
   res.send(result);
 };
 
+exports.getPopularContests = async (req, res) => {
+  const result = await Contest.aggregate([
+    { $match: { status: "accepted" } },
+    {
+      $project: {
+        $title: 1,
+        $type: 1,
+        $image: 1,
+        $description: 1,
+        $participantsCount: { $size: "$participants" },
+      },
+    },
+    {
+      $sort: { participantsCount: -1 },
+    },
+    { $limit: 5 },
+  ]);
+
+  res.status(200).json(result);
+};
+
+exports.getBestCreatorByPrizeMoney = async (req, res) => {
+  const result = await Contest.aggregate([
+    {
+      $match: { status: "accepted" },
+    },
+    {
+      $group: {
+        _id: "$creator",
+        totalPrizeMoney: { $sum: "$prizeMoney" },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "creator",
+      },
+    },
+    {
+      $unwind: "$creator",
+    },
+    {
+      $project: {
+        _id: 0,
+        creator: "$creator.name",
+        totalPrizeMoney: 1,
+      },
+    },
+    {
+      $sort: { totalPrizeMoney: -1 },
+    },
+    {
+      $limit: 1,
+    },
+  ]);
+
+  res.status(200).json(result);
+};
+
 exports.getContestByCreator = async (req, res) => {
   const id = req.params.creatorId;
   const result = await Contest.find({ creator: id });
@@ -64,8 +125,6 @@ exports.createContest = async (req, res) => {
 exports.addParticipant = async (req, res) => {
   const contestId = req.params.contestId;
   const userId = req.params.userId;
-
-  console.log(contestId, userId);
 
   try {
     const contest = await Contest.findById(contestId);

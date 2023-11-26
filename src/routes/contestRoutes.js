@@ -13,22 +13,27 @@ router
     contestController.getAllContestsForAdmin
   );
 
+router.route("/popular").get(contestController.getPopularContests);
+router.route("/best-creator").get(contestController.getBestCreatorByPrizeMoney);
+
 router
   .route("/")
   .get(contestController.getAllContests)
-  .post(verifyToken, contestController.createContest);
+  .post(verifyToken, verifyRole("creator"), contestController.createContest);
 
 router.use(verifyToken);
 
 router
   .route("/:id")
   .get(contestController.getContestById)
-  .patch(contestController.updateContest)
-  .delete(contestController.deleteContest);
+  .patch(verifyRole("creator", "admin"), contestController.updateContest)
+  .delete(verifyRole("creator", "admin"), contestController.deleteContest);
 
-router.route("/creator/:creatorId").get(contestController.getContestByCreator);
+router
+  .route("/creator/:creatorId")
+  .get(verifyRole("creator", "admin"), contestController.getContestByCreator);
 router
   .route("/:contestId/participant/:userId")
-  .patch(contestController.addParticipant);
+  .patch(verifyRole("user"), contestController.addParticipant);
 
 module.exports = router;
