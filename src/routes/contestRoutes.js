@@ -24,6 +24,11 @@ router
 router.use(verifyToken);
 
 router
+  .route("/registered/:userId")
+  .get(contestController.getRegisteredContestByUser);
+router.route("/winning/:userId").get(contestController.getWinningContestByUser);
+
+router
   .route("/:id")
   .get(contestController.getContestById)
   .patch(verifyRole("creator", "admin"), contestController.updateContest)
@@ -32,6 +37,15 @@ router
 router
   .route("/creator/:creatorId")
   .get(verifyRole("creator", "admin"), contestController.getContestByCreator);
+
+router
+  .route("/:contestId/creator/:creatorId")
+  .get(contestController.getContestByIdForCreators);
+
+router
+  .route("/:contestId/winner")
+  .patch(verifyRole("creator"), contestController.declareWinner);
+
 router
   .route("/:contestId/participant/:userId")
   .patch(verifyRole("user"), contestController.addParticipant);

@@ -22,8 +22,62 @@ exports.getAllContests = async (req, res) => {
 
 exports.getContestById = async (req, res) => {
   const id = req.params.id;
-  const result = await Contest.findById(id).populate("creator");
+  // const result = await Contest.aggregate([
+  //   {
+  //     $match: { _id: id },
+  //   },
+  //   {
+  //     $project: {
+  //       title: 1,
+  //       type: 1,
+  //       image: 1,
+  //       description: 1,
+  //       prize: 1,
+  //       deadline: 1,
+  //       participantsCount: { $size: "$participants" },
+  //       winner: 1,
+  //     },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "users",
+  //       localField: "winner",
+  //       foreignField: "_id",
+  //       as: "winner",
+  //     },
+  //   },
+  // ]);
+
+  const result = await Contest.findById(id)
+    .populate("winner", "name email")
+    .populate("creator", "name email");
+
   res.send(result);
+};
+
+exports.getContestByIdForCreators = async (req, res) => {
+  const contestId = req.params.contestId;
+  const creatorId = req.params.creatorId;
+
+  try {
+    const contest = await Contest.findById(contestId)
+      .populate("participants")
+      .populate("winner");
+
+    if (!contest) {
+      return res.status(404).send({ message: "Contest not found" });
+    }
+
+    if (contest.creator.toString() !== creatorId) {
+      return res.status(403).send({ message: "Access denied" });
+    }
+
+    res.status(200).send(contest);
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: error?.message || "Internal server error" });
+  }
 };
 
 exports.getPopularContests = async (req, res) => {
@@ -31,11 +85,11 @@ exports.getPopularContests = async (req, res) => {
     { $match: { status: "accepted" } },
     {
       $project: {
-        $title: 1,
-        $type: 1,
-        $image: 1,
-        $description: 1,
-        $participantsCount: { $size: "$participants" },
+        title: 1,
+        type: 1,
+        image: 1,
+        description: 1,
+        participantsCount: { $size: "$participants" },
       },
     },
     {
@@ -84,6 +138,22 @@ exports.getBestCreatorByPrizeMoney = async (req, res) => {
     },
   ]);
 
+  res.status(200).json(result);
+};
+
+exports.getRegisteredContestByUser = async (req, res) => {
+  try {
+    const id = req.params.userId;
+    const result = await Contest.find({ participants: id });
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+exports.getWinningContestByUser = async (req, res) => {
+  const id = req.params.userId;
+  const result = await Contest.find({ winner: id });
   res.status(200).json(result);
 };
 
@@ -140,6 +210,45 @@ exports.addParticipant = async (req, res) => {
 
     // added the participant
     contest.participants.push(userId);
+
+    // save the contest
+    await contest.save();
+
+    res.status(200).send({ message: "Participant added successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: error?.message || "Internal server error" });
+  }
+};
+
+exports.declareWinner = async (req, res) => {
+  const contestId = req.params.contestId;
+  const email = req.decoded.email;
+
+  try {
+    const contest = await Contest.findById(contestId).populate("creator");
+    if (!contest) {
+      return res.status(404).send({ message: "Contest not found" });
+    }
+
+    // check if the contest is created by the creator
+    if (contest.creator?.email !== email) {
+      return res.status(403).send({ message: "Access denied" });
+    }
+
+    // check if the contest is not closed yet
+    if (contest.deadline > new Date()) {
+      return res.status(400).send({ message: "Contest is not close yet" });
+    }
+
+    // check if the winner is already declared
+    if (contest.winner) {
+      return res.status(400).send({ message: "Winner already declared" });
+    }
+
+    // declare the winner
+    contest.winner = req.body.winner;
 
     // save the contest
     await contest.save();

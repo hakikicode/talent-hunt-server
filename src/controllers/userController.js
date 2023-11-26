@@ -27,4 +27,4 @@ exports.updateUser = async (req, res) => {
   const user = req.body;
   const result = await User.findByIdAndUpdate(id, user);
   res.send(result);
-}
+};
