@@ -179,19 +179,51 @@ exports.getWinningContest = async (req, res) => {
 
 exports.getContestByCreator = async (req, res) => {
   const id = req.params.creatorId;
-  const result = await Contest.find({ creator: id });
-  res.send(result);
+  const email = req.decoded.email;
+
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  try {
+    const creator = await User.findOne({ email });
+
+    if (
+      !creator ||
+      creator._id.toString() !== id ||
+      creator.role !== "creator"
+    ) {
+      return res
+        .status(403)
+        .send({ message: "Access Denied: Insufficient Permission" });
+    }
+
+    const result = await Contest.find({ creator: id }).skip(skip).limit(limit);
+    const total = await Contest.countDocuments({ creator: id });
+
+    res.send({ contests: result, count: total });
+  } catch (error) {
+    res.stats(500).send(error);
+  }
 };
 
 exports.getAllContestsForAdmin = async (req, res) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
   try {
     const result = await Contest.find({})
+      .skip(skip)
+      .limit(limit)
       .populate("creator", "name email")
       .select(
         "title type description instruction image prizeMoney creator winner deadline participationCount status"
       );
 
-    res.send(result);
+    const total = await Contest.countDocuments();
+
+    res.send({ result, count: total });
   } catch (error) {
     console.log(error);
     res.status(500).send(error);
@@ -199,17 +231,22 @@ exports.getAllContestsForAdmin = async (req, res) => {
 };
 
 exports.createContest = async (req, res) => {
-  const contest = req.body;
+  try {
+    const contest = req.body;
 
-  const creator = await User.findById(contest.creator).select("role");
-  if (!creator || creator.role !== "creator") {
-    return res
-      .status(403)
-      .send({ message: "Access Denied: Insufficient Permission" });
+    const creator = await User.findById(contest.creator).select("role");
+    if (!creator || creator.role !== "creator") {
+      return res
+        .status(403)
+        .send({ message: "Access Denied: Insufficient Permission" });
+    }
+
+    const result = await Contest.create(contest);
+
+    res.status(201).send(result);
+  } catch (error) {
+    res.status(500).send(error);
   }
-
-  const result = await Contest.create(contest);
-  res.send(result);
 };
 
 exports.addParticipant = async (req, res) => {
@@ -275,9 +312,7 @@ exports.declareWinner = async (req, res) => {
 
     res.status(200).send({ message: "Participant added successfully" });
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: error?.message || "Internal server error" });
+    res.status(500).send(error);
   }
 };
 
