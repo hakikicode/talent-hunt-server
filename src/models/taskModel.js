@@ -19,8 +19,8 @@ const taskModel = new Schema({
     type: Date,
     default: Date.now(),
   },
-})
+});
 
 const Task = model("Task", taskModel);
 
-export default Task;
+module.exports = Task;

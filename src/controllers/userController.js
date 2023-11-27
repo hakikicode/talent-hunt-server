@@ -1,8 +1,17 @@
 const User = require("../models/userModel");
 
 exports.getAllUsers = async (req, res) => {
-  const users = await User.find({});
-  res.send(users);
+  try {
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 10;
+    const skip = (page - 1) * limit;
+
+    const users = await User.find({}).skip(skip).limit(limit);
+    const total = await User.countDocuments();
+    res.send({ users, count: total });
+  } catch (error) {
+    res.send(error);
+  }
 };
 
 exports.getUserByEmail = async (req, res) => {
