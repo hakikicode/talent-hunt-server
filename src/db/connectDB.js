@@ -23,7 +23,7 @@ const getConnectionString = () => {
 
 const connectDB = async () => {
   console.log("connecting to db...");
-  const mongoURI = getConnectionString();
+  const mongoURI = "mongodb+srv://masud:masud1234@cluster0.egfjetc.mongodb.net";
 
   try {
     await mongoose.connect(mongoURI, { dbName: process.env.DB_NAME });

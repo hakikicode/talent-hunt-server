@@ -1,5 +1,6 @@
 const Contest = require("../models/contestModel");
 const User = require("../models/userModel");
+const Task = require("../models/taskModel");
 
 exports.getAllContests = async (req, res) => {
   const result = await Contest.aggregate([
@@ -20,39 +21,24 @@ exports.getAllContests = async (req, res) => {
   res.status(200).json(result);
 };
 
+// ****************************
 exports.getContestById = async (req, res) => {
-  const id = req.params.id;
-  // const result = await Contest.aggregate([
-  //   {
-  //     $match: { _id: id },
-  //   },
-  //   {
-  //     $project: {
-  //       title: 1,
-  //       type: 1,
-  //       image: 1,
-  //       description: 1,
-  //       prize: 1,
-  //       deadline: 1,
-  //       participantsCount: { $size: "$participants" },
-  //       winner: 1,
-  //     },
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "users",
-  //       localField: "winner",
-  //       foreignField: "_id",
-  //       as: "winner",
-  //     },
-  //   },
-  // ]);
+  try {
+    const id = req.params.id;
+    console.log(id);
 
-  const result = await Contest.findById(id)
-    .populate("winner", "name email")
-    .populate("creator", "name email");
+    const result = await Contest.aggregate([{ $match: { _id: id } }]);
 
-  res.send(result);
+    const result2 = await Contest.findById(id)
+      .populate("winner", "name email image")
+      .populate("creator", "name email image");
+
+    console.log(result, result2);
+
+    res.send(result2);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 };
 
 exports.getContestByIdForCreators = async (req, res) => {
@@ -61,18 +47,48 @@ exports.getContestByIdForCreators = async (req, res) => {
 
   try {
     const contest = await Contest.findById(contestId)
-      .populate("participants")
-      .populate("winner");
+      .populate("participants", "_id name image email")
+      .populate("winner")
+      .exec();
 
     if (!contest) {
       return res.status(404).send({ message: "Contest not found" });
     }
 
+    // Check if the logged-in user is the creator of the contest
     if (contest.creator.toString() !== creatorId) {
       return res.status(403).send({ message: "Access denied" });
     }
 
-    res.status(200).send(contest);
+    const tasks = await Task.find({ contestId })
+      .populate("participantId", "name")
+      .select("participantId task")
+      .exec();
+
+    const participantsWithTasks = contest.participants.map((participant) => {
+      const participantTask = tasks.find((task) =>
+        task.participantId.equals(participant._id)
+      );
+
+      return {
+        _id: participant._id,
+        name: participant.name,
+        image: participant.image,
+        email: participant.email,
+        task: participantTask ? participantTask.task : null,
+      };
+    });
+
+    const formattedContest = {
+      title: contest.title,
+      description: contest.description,
+      deadline: contest.deadline,
+      prizeMoney: contest.prizeMoney,
+      winner: contest.winner,
+      participants: participantsWithTasks,
+    };
+
+    res.status(200).send(formattedContest);
   } catch (error) {
     res
       .status(500)
@@ -327,4 +343,58 @@ exports.deleteContest = async (req, res) => {
   const id = req.params.id;
   const result = await Contest.findByIdAndDelete(id);
   res.send(result);
+};
+
+exports.getBestCreators = async (req, res) => {
+  try {
+    const creators = await Contest.aggregate([
+      {
+        $match: { status: "accepted" },
+      },
+      {
+        $group: {
+          _id: "$creator",
+          totalPrizeMoney: { $sum: "$prizeMoney" },
+        },
+      },
+    ]);
+
+    console.log(creators);
+
+    const creatorIds = creators.map((creator) => creator._id);
+
+    const result = await User.find({ _id: { $in: creatorIds } })
+      .select("name email image")
+      .sort({ totalPrizeMoney: -1 });
+
+    res.status(200).send(result);
+  } catch (error) {
+    res.stats(500).send(error);
+  }
+};
+
+exports.getWinners = async (req, res) => {
+  try {
+    const contests = await Contest.find({
+      status: "accepted",
+      winner: { $ne: null },
+    })
+      .populate("winner", "name email image")
+      .select("title prizeMoney image winner participants");
+
+    const winners = contests.map((contest) => {
+      return {
+        title: contest.title,
+        image: contest.image,
+        winner: contest.winner,
+        prizeMoney: contest.prizeMoney,
+        participantCount: contest?.participants?.length,
+      };
+    });
+
+    res.status(200).send(winners);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
 };

@@ -37,3 +37,15 @@ exports.updateUser = async (req, res) => {
   const result = await User.findByIdAndUpdate(id, user);
   res.send(result);
 };
+
+exports.getBestCreators = async (req, res) => {
+  try {
+    const creators = await User.aggregate([
+      {
+        $match: { role: "creator" },
+      },
+    ]);
+  } catch (error) {
+    res.stats(500).send(error);
+  }
+};

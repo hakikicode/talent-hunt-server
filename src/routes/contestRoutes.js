@@ -15,6 +15,7 @@ router
 
 router.route("/popular").get(contestController.getPopularContests);
 router.route("/best-creator").get(contestController.getBestCreatorByPrizeMoney);
+router.route("/winners").get(contestController.getWinners);
 
 router
   .route("/")
@@ -40,7 +41,10 @@ router
 
 router
   .route("/:contestId/creator/:creatorId")
-  .get(contestController.getContestByIdForCreators);
+  .get(
+    verifyRole("creator", "admin"),
+    contestController.getContestByIdForCreators
+  );
 
 router
   .route("/:contestId/winner")
