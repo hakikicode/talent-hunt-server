@@ -22,6 +22,10 @@ const userSchema = new Schema({
     enum: ["user", "creator", "admin"],
     default: "user",
   },
+  credits: {
+    type: Number,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),

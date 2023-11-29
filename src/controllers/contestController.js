@@ -3,22 +3,31 @@ const User = require("../models/userModel");
 const Task = require("../models/taskModel");
 
 exports.getAllContests = async (req, res) => {
-  const result = await Contest.aggregate([
-    {
-      $match: { status: "accepted" },
-    },
-    {
-      $project: {
-        title: 1,
-        type: 1,
-        image: 1,
-        description: 1,
-        participantsCount: { $size: "$participants" },
-      },
-    },
-  ]);
+  try {
+    const searchText = req.query.search || "";
 
-  res.status(200).json(result);
+    const result = await Contest.aggregate([
+      {
+        $match: {
+          status: "accepted",
+          type: { $regex: searchText, $options: "i" },
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          type: 1,
+          image: 1,
+          description: 1,
+          participantsCount: { $size: "$participants" },
+        },
+      },
+    ]);
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // ****************************
@@ -80,6 +89,7 @@ exports.getContestByIdForCreators = async (req, res) => {
     });
 
     const formattedContest = {
+      _id: contest._id,
       title: contest.title,
       description: contest.description,
       deadline: contest.deadline,
@@ -143,6 +153,8 @@ exports.getBestCreatorByPrizeMoney = async (req, res) => {
       $project: {
         _id: 0,
         creator: "$creator.name",
+        image: "$creator.image",
+        email: "$creator.email",
         totalPrizeMoney: 1,
       },
     },
@@ -150,7 +162,7 @@ exports.getBestCreatorByPrizeMoney = async (req, res) => {
       $sort: { totalPrizeMoney: -1 },
     },
     {
-      $limit: 1,
+      $limit: 3,
     },
   ]);
 
@@ -395,6 +407,87 @@ exports.getWinners = async (req, res) => {
     res.status(200).send(winners);
   } catch (error) {
     console.log(error);
+    res.status(500).send(error);
+  }
+};
+
+exports.getUserStats = async (req, res) => {
+  const email = req.decoded?.email;
+
+  if (!email) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+
+  try {
+    const user = await User.findOne({ email }).select("_id");
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const contests = await Contest.find({
+      participants: user._id,
+      status: "accepted",
+    });
+
+    const stats = {
+      totalContests: contests.length,
+      totalFee: contests.reduce((acc, curr) => acc + curr.entryFee, 0),
+      totalPrizeMoney: contests.reduce((acc, curr) => acc + curr.prizeMoney, 0),
+      totalWinningContests: contests.filter(
+        (contest) => contest.winner?.toString() === user._id.toString()
+      ).length,
+    };
+
+    res.status(200).send(stats);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+};
+
+exports.getLeaderboard = async (req, res) => {
+  console.log("getLeaderboard");
+  try {
+    const users = await Contest.aggregate([
+      {
+        $match: { status: "accepted" },
+      },
+      {
+        $group: {
+          _id: "$winner",
+          totalPrizeMoney: { $sum: "$prizeMoney" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "winner",
+        },
+      },
+      {
+        $unwind: "$winner",
+      },
+      {
+        $project: {
+          _id: 0,
+          winner: "$winner.name",
+          image: "$winner.image",
+          email: "$winner.email",
+          totalPrizeMoney: 1,
+        },
+      },
+      {
+        $sort: { totalPrizeMoney: -1 },
+      },
+      {
+        $limit: 20,
+      },
+    ]);
+
+    res.status(200).send(users);
+  } catch (error) {
     res.status(500).send(error);
   }
 };

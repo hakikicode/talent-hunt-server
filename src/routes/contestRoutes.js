@@ -16,6 +16,7 @@ router
 router.route("/popular").get(contestController.getPopularContests);
 router.route("/best-creator").get(contestController.getBestCreatorByPrizeMoney);
 router.route("/winners").get(contestController.getWinners);
+router.route("/leaderboard").get(contestController.getLeaderboard);
 
 router
   .route("/")
@@ -28,6 +29,7 @@ router
   .route("/registered")
   .get(verifyRole("user"), contestController.getRegisteredContest);
 router.route("/winning").get(contestController.getWinningContest);
+router.route("/user-stats").get(contestController.getUserStats);
 
 router
   .route("/:id")

@@ -10,9 +10,12 @@ router
   .get(userController.getUserByEmail)
   .post(userController.createUser);
 
+router.route("/credits").patch(verifyToken, userController.addCredits);
+
+router.route("/:id").patch(userController.updateUser);
+
 router.use(verifyToken, verifyRole("admin"));
 
 router.route("/").get(userController.getAllUsers);
-router.route("/:id").patch(userController.updateUser);
 
 module.exports = router;

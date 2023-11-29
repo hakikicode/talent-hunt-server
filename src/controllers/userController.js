@@ -49,3 +49,23 @@ exports.getBestCreators = async (req, res) => {
     res.stats(500).send(error);
   }
 };
+
+exports.addCredits = async (req, res) => {
+  const email = req.decoded.email;
+
+  console.log(email, req.body);
+
+  try {
+    const result = await User.findOne({ email });
+    if (!result || result.role !== "creator")
+      return res.status(404).send("User not found");
+
+    const credits = req.body.credits;
+    result.credits += credits;
+    await result.save();
+
+    res.send(result);
+  } catch (error) {
+    res.send(error);
+  }
+};
