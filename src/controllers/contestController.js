@@ -22,6 +22,9 @@ exports.getAllContests = async (req, res) => {
           participantsCount: { $size: "$participants" },
         },
       },
+      {
+        $sort: { participantsCount: -1 },
+      },
     ]);
 
     res.status(200).json(result);
@@ -262,12 +265,22 @@ exports.createContest = async (req, res) => {
   try {
     const contest = req.body;
 
-    const creator = await User.findById(contest.creator).select("role");
+    const creator = await User.findById(contest.creator).select("role credits");
     if (!creator || creator.role !== "creator") {
       return res
         .status(403)
         .send({ message: "Access Denied: Insufficient Permission" });
     }
+
+    const credits = creator?.credits || 0;
+
+    if (credits < 50) {
+      return res.status(400).send({ message: "Insufficient credits" });
+    }
+
+    // deduct 50 credits from the creator
+    creator.credits = credits - 50;
+    await creator.save();
 
     const result = await Contest.create(contest);
 
