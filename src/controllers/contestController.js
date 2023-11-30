@@ -124,7 +124,7 @@ exports.getPopularContests = async (req, res) => {
     {
       $sort: { participantsCount: -1 },
     },
-    { $limit: 5 },
+    { $limit: 6 },
   ]);
 
   res.status(200).json(result);
@@ -138,6 +138,7 @@ exports.getBestCreatorByPrizeMoney = async (req, res) => {
     {
       $group: {
         _id: "$creator",
+        bestContest: { $first: "$$ROOT" }, // Retrieve the first contest for each creator
         totalPrizeMoney: { $sum: "$prizeMoney" },
       },
     },
@@ -158,6 +159,7 @@ exports.getBestCreatorByPrizeMoney = async (req, res) => {
         creator: "$creator.name",
         image: "$creator.image",
         email: "$creator.email",
+        bestContest: "$bestContest", // Include the details of the best contest
         totalPrizeMoney: 1,
       },
     },
@@ -165,7 +167,7 @@ exports.getBestCreatorByPrizeMoney = async (req, res) => {
       $sort: { totalPrizeMoney: -1 },
     },
     {
-      $limit: 3,
+      $limit: 5, // Limit the result to the top 5 creators with their best contests
     },
   ]);
 
@@ -382,15 +384,19 @@ exports.getBestCreators = async (req, res) => {
           totalPrizeMoney: { $sum: "$prizeMoney" },
         },
       },
+      {
+        $select: {
+          title: 1,
+          description: 1,
+        },
+      },
     ]);
-
-    console.log(creators);
 
     const creatorIds = creators.map((creator) => creator._id);
 
-    const result = await User.find({ _id: { $in: creatorIds } })
-      .select("name email image")
-      .sort({ totalPrizeMoney: -1 });
+    const result = await User.find({ _id: { $in: creatorIds } }).sort({
+      totalPrizeMoney: -1,
+    });
 
     res.status(200).send(result);
   } catch (error) {
@@ -442,13 +448,19 @@ exports.getUserStats = async (req, res) => {
       status: "accepted",
     });
 
+    const winningContests =
+      contests.filter(
+        (contest) => contest.winner?.toString() === user._id.toString()
+      ) || [];
+
     const stats = {
       totalContests: contests.length,
       totalFee: contests.reduce((acc, curr) => acc + curr.entryFee, 0),
-      totalPrizeMoney: contests.reduce((acc, curr) => acc + curr.prizeMoney, 0),
-      totalWinningContests: contests.filter(
-        (contest) => contest.winner?.toString() === user._id.toString()
-      ).length,
+      totalPrizeMoney: winningContests.reduce(
+        (acc, curr) => acc + curr.prizeMoney,
+        0
+      ),
+      totalWinningContests: winningContests.length,
     };
 
     res.status(200).send(stats);
