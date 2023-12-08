@@ -69,3 +69,25 @@ exports.addCredits = async (req, res) => {
     res.send(error);
   }
 };
+
+exports.getAdminStats = async (req, res) => {
+  try {
+    const users = await User.aggregate([
+      {
+        $match: {
+          role: "user",
+        },
+      },
+      {
+        $group: {
+          _id: "$role",
+          total: { $sum: 1 },
+        },
+      },
+    ]).toArray();
+
+    res.send(users);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};

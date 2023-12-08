@@ -10,6 +10,8 @@ router
   .get(userController.getUserByEmail)
   .post(userController.createUser);
 
+router.route("/get-admin-stats").get(userController.getAdminStats);
+
 router.route("/credits").patch(verifyToken, userController.addCredits);
 
 router.route("/:id").patch(userController.updateUser);

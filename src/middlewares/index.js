@@ -8,6 +8,7 @@ const { LOCAL_CLIENT, CLIENT } = require("../config/defaults");
 const applyMiddleware = (app) => {
   const corsOptions = {
     origin: [
+      "http://localhost:5173",
       "https://contest-platform-d8309.web.app",
       "https://contest-platform-d8309.firebaseapp.com",
     ],
