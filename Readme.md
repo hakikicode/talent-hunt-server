@@ -1,7 +1,7 @@
 <h2 align="center">
 Talent Hunt | Online Contest Site</h2>
 
-<p>This is a server site repository for Talent Hunt an Online Contest Platform with  React, Tailwind, Express, Firebase, JWT, and Mongoose.</p>
+<p>This is the server site repository for Talent Hunt an Online Contest Platform with  React, Tailwind, Express, Firebase, JWT, and Mongoose.</p>
 
 ### 🚀 Important Links
 
