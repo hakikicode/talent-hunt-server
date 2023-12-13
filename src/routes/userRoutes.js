@@ -5,7 +5,7 @@ const verifyRole = require("../middlewares/verifyRole");
 
 const router = express.Router();
 
-router.route("/get-admin-stats").get(userController.getAdminStats);
+router.route("/admin-stats").get(userController.getAdminStats);
 
 router
   .route("/:email")

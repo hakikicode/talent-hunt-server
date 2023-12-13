@@ -80,6 +80,18 @@ exports.getAdminStats = async (req, res) => {
           total: { $sum: 1 },
         },
       },
+      {
+        $project: {
+          _id: 0,
+          role: "$_id",
+          total: 1,
+        },
+      },
+      {
+        $sort: {
+          role: 1,
+        },
+      },
     ]);
 
     const totalContests = await Contest.estimatedDocumentCount();
