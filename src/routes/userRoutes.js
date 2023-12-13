@@ -5,12 +5,12 @@ const verifyRole = require("../middlewares/verifyRole");
 
 const router = express.Router();
 
+router.route("/get-admin-stats").get(userController.getAdminStats);
+
 router
   .route("/:email")
   .get(userController.getUserByEmail)
   .post(userController.createUser);
-
-router.route("/get-admin-stats").get(userController.getAdminStats);
 
 router.route("/credits").patch(verifyToken, userController.addCredits);
 

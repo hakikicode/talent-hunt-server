@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const Contest = require("../models/contestModel");
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -74,20 +75,27 @@ exports.getAdminStats = async (req, res) => {
   try {
     const users = await User.aggregate([
       {
-        $match: {
-          role: "user",
-        },
-      },
-      {
         $group: {
           _id: "$role",
           total: { $sum: 1 },
         },
       },
-    ]).toArray();
+    ]);
 
-    res.send(users);
+    const totalContests = await Contest.estimatedDocumentCount();
+
+    const contests = await Contest.find({
+      status: "accepted",
+    }).select("title entryFee participants");
+
+    const stats = {
+      users,
+      totalContests,
+      contests,
+    };
+    res.send(stats);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 };

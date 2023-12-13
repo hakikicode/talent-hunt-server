@@ -23,7 +23,7 @@ exports.getAllContests = async (req, res) => {
         },
       },
       {
-        $sort: { participantsCount: -1 },
+        $sort: { createdAt: 1 },
       },
     ]);
 
