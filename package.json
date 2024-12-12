@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Kwara talents hunt harvest for a chance to show your talents and get votes to be on the finalist",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
