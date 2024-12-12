@@ -6,30 +6,33 @@ const getConnectionString = () => {
 
   if (process.env.NODE_ENV === "development") {
     connectionUrl = process.env.DATABASE_LOCAL;
-    connectionUrl = connectionUrl.replace(
-      "<username>",
-      process.env.DATABASE_LOCAL_USERNAME
-    );
-    connectionUrl = connectionUrl.replace(
-      "<password>",
-      process.env.DATABASE_LOCAL_PASSWORD
-    );
   } else {
-    connectionUrl = process.env.DATABASE_PROD;
+    connectionUrl = process.env.DATABASE_PROD.replace(
+      "<password>",
+      process.env.DATABASE_PROD_PASSWORD
+    );
   }
 
   return connectionUrl;
 };
 
 const connectDB = async () => {
-  console.log("connecting to db...");
-  const mongoURI = "mongodb+srv://masud:masud1234@cluster0.egfjetc.mongodb.net";
+  console.log("Connecting to MongoDB...");
 
   try {
-    await mongoose.connect(mongoURI, { dbName: process.env.DB_NAME });
-    console.log("DB connected");
-  } catch (err) {
-    console.log("DB connection error --> ", err);
+    const connectionUrl = getConnectionString();
+
+    // Set up the connection
+    await mongoose.connect(connectionUrl, {
+      dbName: process.env.DB_NAME,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log("Database connected successfully!");
+  } catch (error) {
+    console.error("Database connection failed. Error: ", error.message);
+    process.exit(1); // Exit the process with failure
   }
 };
 

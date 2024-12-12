@@ -3,22 +3,27 @@ const express = require("express");
 require("dotenv").config();
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
-const { LOCAL_CLIENT, CLIENT } = require("../config/defaults");
 
 const applyMiddleware = (app) => {
   const corsOptions = {
-    origin: [
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || [
       "http://localhost:5173",
-      "https://contest-platform-d8309.web.app",
-      "https://contest-platform-d8309.firebaseapp.com",
+      "https://kwaratalentsharvest.com.ng",
+      "https://kwaratalentsharvest.vercel.app/",
     ],
     credentials: true,
-    optionSuccessStatus: 200,
+    optionsSuccessStatus: 200,
   };
+
   app.use(cors(corsOptions));
   app.use(express.json());
   app.use(cookieParser());
-  app.use(morgan("dev"));
+
+  if (process.env.NODE_ENV === "development") {
+    app.use(morgan("dev"));
+  } else {
+    app.use(morgan("combined")); // Production-friendly logging
+  }
 };
 
 module.exports = applyMiddleware;

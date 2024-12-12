@@ -1,76 +1,77 @@
-const { model, Schema } = require("mongoose");
-const validator = require("validator");
+const mongoose = require("mongoose");
 
-const contestSchema = new Schema({
-  title: {
-    type: String,
-    required: [true, "Contest title is required"],
-  },
-  type: {
-    type: String,
-    enum: ["business", "medical", "writing", "gaming"],
-    required: [true, "Contest type is required"],
-  },
-  description: {
-    type: String,
-    required: [true, "Description is required"],
-    minLength: [50, "Description must be at least 50 characters long"],
-  },
-  instruction: {
-    type: String,
-    required: [true, "Instruction is required"],
-    minLength: [20, "Instruction must be at least 20 characters long"],
-  },
-  image: {
-    type: String,
-    required: [true, "Image is required"],
-  },
-  prizeMoney: {
-    type: Number,
-    required: [true, "Prize money is required"],
-    min: [1, "Prize money must be at least 1"],
-  },
-  entryFee: {
-    type: Number,
-    required: [true, "Entry fee is required"],
-    min: [1, "Entry fee must be at least 1"],
-  },
-  status: {
-    type: String,
-    enum: ["pending", "accepted"],
-    default: "pending",
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: [true, "Creator must belong to a creator"],
-  },
-  winner: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default: null,
-  },
-  participants: [
-    {
-      type: Schema.Types.ObjectId,
+const contestSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: [true, "Contest title is required"],
+      trim: true,
+    },
+    type: {
+      type: String,
+      required: [true, "Contest type is required"],
+    },
+    description: {
+      type: String,
+      required: [true, "Description is required"],
+    },
+    image: {
+      type: String,
+      required: [true, "Contest image is required"],
+    },
+    prizeMoney: {
+      type: Number,
+      required: [true, "Prize money is required"],
+      min: [0, "Prize money cannot be negative"],
+    },
+    entryFee: {
+      type: Number,
+      default: 0,
+      min: [0, "Entry fee cannot be negative"],
+    },
+    deadline: {
+      type: Date,
+      required: [true, "Deadline is required"],
+      validate: {
+        validator: function (value) {
+          return value > Date.now();
+        },
+        message: "Deadline must be a future date",
+      },
+    },
+    status: {
+      type: String,
+      enum: ["accepted", "pending", "rejected"],
+      default: "pending",
+    },
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Creator is required"],
+    },
+    participants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    winner: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-  ],
-  deadline: {
-    type: Date,
-    required: [true, "Deadline is required"],
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  createdAt: {
-    type: Date,
-    default: Date.now(),
-  },
-});
+  { timestamps: true }
+);
 
-// Virtual fields
-contestSchema.virtual("participationCount").get(function () {
-  return this.participants.length;
-});
+// Add indexes for performance optimization
+contestSchema.index({ title: "text", type: "text", description: "text" });
 
-const Contest = model("Contest", contestSchema);
-
-module.exports = Contest;
+module.exports = mongoose.model("Contest", contestSchema);
