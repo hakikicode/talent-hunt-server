@@ -1,30 +1,20 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const getConnectionString = () => {
-  let connectionUrl;
-
-  if (process.env.NODE_ENV === "development") {
-    connectionUrl = process.env.DATABASE_LOCAL;
-  } else {
-    connectionUrl = process.env.DATABASE_PROD.replace(
-      "<password>",
-      process.env.DATABASE_PROD_PASSWORD
-    );
-  }
-
-  return connectionUrl;
-};
-
 const connectDB = async () => {
   console.log("Connecting to MongoDB...");
 
   try {
-    const connectionUrl = getConnectionString();
+    // Get the connection string for the production environment
+    const connectionUrl = process.env.DATABASE_PROD;
 
-    // Set up the connection
+    if (!connectionUrl) {
+      throw new Error("DATABASE_PROD is not defined in environment variables.");
+    }
+
+    // Connect to MongoDB
     await mongoose.connect(connectionUrl, {
-      dbName: process.env.DB_NAME,
+      dbName: process.env.DB_NAME, // Specify the database name
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -32,7 +22,7 @@ const connectDB = async () => {
     console.log("Database connected successfully!");
   } catch (error) {
     console.error("Database connection failed. Error: ", error.message);
-    process.exit(1); // Exit the process with failure
+    process.exit(1); // Exit with failure
   }
 };
 
