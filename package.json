@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Kwara talents hunt harvest for a chance to show your talents and get votes to be on the finalist",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -9,13 +9,11 @@
   },
   "files": [
     "index.js",
-    "src/config/connectDB.js",
-    "src/app.js",
-    "src/**/*.js"
+    "src/**/*",
+    ".env",
+    "package.json",
+    "vercel.json"
   ],
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",

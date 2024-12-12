@@ -31,21 +31,5 @@ app.use("/api/v1/payments", paymentRoutes);
 app.all("*", notFound);
 app.use(globalErrorHandler);
 
-// Start Server
-const port = process.env.PORT || 5000; // Define the port variable
-
-const main = async () => {
-  try {
-    await connectDB(); // Connect to the database
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
-  } catch (error) {
-    console.error("Error starting the server:", error.message);
-    process.exit(1); // Exit the process with failure
-  }
-};
-
-main();
-
+// Export the app for index.js
 module.exports = app;

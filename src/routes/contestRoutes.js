@@ -54,7 +54,7 @@ router
 
 router
   .route("/:contestId/participant/:userId")
-  .patch(verifyRole("user"), contestController.addParticipant);
+  .patch(verifyRole("user"), contestController.registerParticipant);
 
   // Route for participant registration in a contest
 router
@@ -63,8 +63,8 @@ router
 
 // Route for voting in a contest
 router
-.route("/:contestId/vote")
-.post(verifyToken, verifyRole("user"), contestController.voteForParticipant);
+  .route("/:contestId/vote")
+  .post(verifyToken, verifyRole("user"), contestController.voteForParticipant);
 
 
 module.exports = router;

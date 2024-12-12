@@ -6,14 +6,15 @@
       "use": "@vercel/node"
     },
     {
-      "src": "src/app.js",
+      "src": "src/**/*.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "index.js"
+      "dest": "index.js",
+      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     }
   ]
 }
