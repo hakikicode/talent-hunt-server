@@ -12,13 +12,6 @@ const connectDB = async () => {
       throw new Error("DATABASE_PROD is not defined in environment variables.");
     }
 
-    // Connect to MongoDB
-    await mongoose.connect(connectionUrl, {
-      dbName: process.env.DB_NAME, // Specify the database name
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
     console.log("Database connected successfully!");
   } catch (error) {
     console.error("Database connection failed. Error: ", error.message);
