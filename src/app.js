@@ -8,6 +8,7 @@ const userRouter = require("./routes/userRoutes");
 const contestRouter = require("./routes/contestRoutes");
 const taskRouter = require("./routes/taskRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const registrationRoutes = require("./routes/registrationRoutes");
 
 require("dotenv").config();
 const app = express();
@@ -26,6 +27,9 @@ app.use("/users", userRouter);
 app.use("/contests", contestRouter);
 app.use("/tasks", taskRouter);
 app.use("/api/v1/payments", paymentRoutes);
+// Existing routes
+app.use("/registrations", registrationRoutes);
+
 
 // Global Error Handling
 app.all("*", notFound);

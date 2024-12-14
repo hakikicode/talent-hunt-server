@@ -1,5 +1,5 @@
-const User = require("../models/userModel");
-const Contest = require("../models/contestModel");
+const User = require("../registrationModel.js/userModel");
+const Contest = require("../registrationModel.js/contestModel");
 
 exports.getAllUsers = async (req, res) => {
   try {

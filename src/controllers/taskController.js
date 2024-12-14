@@ -1,5 +1,5 @@
-const Task = require("../models/taskModel");
-const User = require("../models/userModel");
+const Task = require("../registrationModel.js/taskModel");
+const User = require("../registrationModel.js/userModel");
 
 exports.getTaskById = async (req, res) => {
   const email = req.decoded.email;

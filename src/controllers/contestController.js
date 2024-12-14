@@ -1,6 +1,6 @@
-const Contest = require("../models/contestModel");
-const User = require("../models/userModel");
-const Task = require("../models/taskModel");
+const Contest = require("../registrationModel.js/contestModel");
+const User = require("../registrationModel.js/userModel");
+const Task = require("../registrationModel.js/taskModel");
 
 exports.getAllContests = async (req, res) => {
   try {

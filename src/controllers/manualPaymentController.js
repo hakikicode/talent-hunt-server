@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
-const ManualPayment = require("../models/manualPaymentModel");
+const ManualPayment = require("../registrationModel.js/manualPaymentModel");
 
 exports.initiateManualPayment = async (req, res) => {
   const { userId, amount } = req.body;
